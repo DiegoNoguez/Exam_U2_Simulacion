@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSL-KDD Dataset Splitter</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">Divide tus DataSet y visualiza sus datos</h1>
+                <p class="app-subtitle">Divide DataSets con terminacion .arff de forma inteligente</p>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <div id="error-message" class="error-message" style="display: none;">
+                <span class="error-icon">⚠️</span>
+                <span id="error-text"></span>
+            </div>
+
+            <div class="app-content">
+                <div class="left-panel">
+                    <!-- Panel de Subida de Archivo -->
+                    <div class="card">
+                        <h2 class="card-title">Subir Dataset</h2>
+                        <div class="file-upload-area" id="file-upload-area">
+                            <input type="file" id="file-upload" class="file-input" accept=".arff">
+                            <label for="file-upload" class="file-label">
+                                <div class="upload-icon">📁</div>
+                                <h3>Selecciona tu archivo ARFF</h3>
+                                <p>Haz clic o arrastra un archivo .arff aquí</p>
+                                <p class="text-muted">Se usará automáticamente el 20% del dataset original</p>
+                            </label>
+                        </div>
+                        <div id="upload-loading" class="loading" style="display: none;">
+                            <div class="spinner"></div>
+                            Procesando dataset...
+                        </div>
+                    </div>
+
+                    <!-- Información del Dataset -->
+                    <div id="dataset-info" class="card" style="display: none;">
+                        <h2 class="card-title">Información del Dataset</h2>
+                        <div class="form-group">
+                            <label class="form-label">ID de Sesión:</label>
+                            <input type="text" class="form-input" id="session-id" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Total de Registros:</label>
+                            <input type="text" class="form-input" id="total-records" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Número de Columnas:</label>
+                            <input type="text" class="form-input" id="columns-count" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Uso de Memoria:</label>
+                            <input type="text" class="form-input" id="memory-usage" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Columnas Categóricas:</label>
+                            <textarea class="form-textarea" id="categorical-columns" rows="3" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-panel">
+                    <!-- Parámetros de División -->
+                    <div id="split-parameters" class="card" style="display: none;">
+                        <h2 class="card-title">Parámetros de División</h2>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Tamaño del Test Set:</label>
+                            <input type="range" class="form-input" id="test-size" min="0.1" max="0.5" step="0.05" value="0.4">
+                            <span id="test-size-value">40%</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Tamaño del Validation Set (del test):</label>
+                            <input type="range" class="form-input" id="val-size" min="0.1" max="0.5" step="0.05" value="0.5">
+                            <span id="val-size-value">50%</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Random State:</label>
+                            <input type="number" class="form-input" id="random-state" value="42" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" class="form-checkbox" id="shuffle" checked>
+                                Mezclar datos antes de dividir
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Columna para Estratificación (opcional):</label>
+                            <select class="form-select" id="stratify-column">
+                                <option value="">-- Sin estratificación --</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary" id="split-button" onclick="splitDataset()">
+                            Dividir Dataset
+                        </button>
+
+                        <div id="split-loading" class="loading" style="display: none;">
+                            <div class="spinner"></div>
+                            Dividiendo dataset...
+                        </div>
+                    </div>
+
+                    <!-- Resultados -->
+                    <div id="results" class="card" style="display: none;">
+                        <h2 class="card-title">Resultados de la División</h2>
+                        
+                        <div class="results-grid">
+                            <div class="result-card">
+                                <div class="result-number" id="train-size">0</div>
+                                <div class="result-label">Train Set</div>
+                                <div class="result-percentage" id="train-percent">0%</div>
+                            </div>
+                            <div class="result-card">
+                                <div class="result-number" id="val-size-result">0</div>
+                                <div class="result-label">Validation Set</div>
+                                <div class="result-percentage" id="val-percent">0%</div>
+                            </div>
+                            <div class="result-card">
+                                <div class="result-number" id="test-size-result">0</div>
+                                <div class="result-label">Test Set</div>
+                                <div class="result-percentage" id="test-percent">0%</div>
+                            </div>
+                        </div>
+
+                        <div id="distribution-section" style="display: none; margin-top: 2rem;">
+                            <h3 style="color: var(--primary-purple); margin-bottom: 1rem; text-align: center;">Distribuciones Estratificadas</h3>
+                            <div id="plots-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                                <!-- Las gráficas se insertarán aquí dinámicamente -->
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary" onclick="clearSession()" style="margin-top: 1rem;">
+                            Nueva División
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
