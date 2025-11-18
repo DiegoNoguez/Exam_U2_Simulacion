@@ -1,0 +1,5 @@
+# Archivo para ingorar carpetas y acrchivos inecesarios para
+# el despliegue. 
+
+__pycache__
+.ExaEnv
