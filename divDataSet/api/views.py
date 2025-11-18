@@ -1,4 +1,3 @@
-from django_restframework import status
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -146,14 +145,20 @@ def split_dataset(request):
         if params.get('stratify'):
             stratify_col = params['stratify']
             if stratify_col in df.columns:
-                distribution_plot = create_lightweight_distribution_plot(df, stratify_col)
+                # Crear gráficas para cada conjunto
+                distribution_plots = {
+                    'original': create_lightweight_distribution_plot(df, stratify_col, 'Distribución Original'),
+                    'train': create_lightweight_distribution_plot(train_set, stratify_col, 'Train Set'),
+                    'validation': create_lightweight_distribution_plot(val_set, stratify_col, 'Validation Set'),
+                    'test': create_lightweight_distribution_plot(test_set, stratify_col, 'Test Set')
+                }
                 
                 response_data['distributions'] = {
                     'original': df[stratify_col].value_counts().to_dict(),
                     'train': train_set[stratify_col].value_counts().to_dict(),
                     'validation': val_set[stratify_col].value_counts().to_dict(),
                     'test': test_set[stratify_col].value_counts().to_dict(),
-                    'plot': distribution_plot
+                    'plots': distribution_plots
                 }
         
         # Actualizar cache con información de la división
