@@ -71,7 +71,7 @@ def create_lightweight_distribution_plot(df, column, title, max_categories=20):
     """Crea un gráfico de distribución optimizado para memoria"""
     try:
         # Configurar figura pequeña
-        plt.figure(figsize=(8, 5), dpi=80)
+        plt.figure(figsize=(12, 8), dpi=100) 
         
         # Para columnas categóricas, limitar el número de categorías mostradas
         if df[column].dtype == 'object':
