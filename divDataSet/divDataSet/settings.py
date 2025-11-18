@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '*',
-    '', # Espacio para mi liga de render. 
+    'exam-u2-simulacion-divdata.onrender.com', # Espacio para mi liga de render. 
     '127.0.0.1:5500' # Para que reciba de mi entorno de desarrollo. 
 ]
 
